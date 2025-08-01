@@ -5,14 +5,19 @@ import plotly.express as px
 import datetime
 
 # --- Page Configuration ---
-st.set_page_config(page_title="SRRstocks", layout="wide")
+st.set_page_config(page_title="SRR STOCKS", layout="wide")
 
 # --- App Header ---
-st.markdown("<h1 style='text-align: center; color: #3366cc;'>📊 SRRstocks: Smart Stock Dashboard</h1>", unsafe_allow_html=True)
+st.markdown("""
+<div style='display: flex; align-items: center; justify-content: center; gap: 10px;'>
+    <span style='font-size: 50px;'>📈</span>
+    <h1 style='color: #3366cc;'>SRR STOCKS</h1>
+</div>
+""", unsafe_allow_html=True)
 st.markdown("---")
 
 # --- Sidebar Menu ---
-menu = st.sidebar.radio("📂 Menu", ["📈 Stocks", "📊 Mutual Funds", "⭐ Watchlist", "⚙️ Settings"])
+menu = st.sidebar.radio("📂 Menu", ["📈 Stocks", "📊 Mutual Funds", "⭐ Watchlist", "⚙️ Settings", "📞 Support"])
 
 # --- Global Constants ---
 wallet_balance = 50000
@@ -28,7 +33,7 @@ with st.container():
 
 # --- Sample Holdings ---
 holdings_data = {
-    "Stock": ["MOTISONS", "GANGAFORGE", "AAPL", "TSLA", "TATASTEEL"],
+    "Stock": ["MOTISONS", "GANGAFORGE", "AAPL", "TSLA", "TATASTEEL.NS"],
     "Quantity": [200, 95, 5, 3, 10],
     "Avg Buy Price (₹)": [112.50, 18.90, 145.00, 750.00, 126.00],
 }
@@ -93,7 +98,7 @@ if menu == "📈 Stocks":
         for symbol in symbols:
             fig1.add_scatter(
                 x=all_data['Date'],
-                y=all_data[f'Close_{symbol}'],
+                y=all_data.get(f'Close_{symbol}', []),
                 mode='lines',
                 name=symbol
             )
@@ -106,7 +111,7 @@ if menu == "📈 Stocks":
         for symbol in symbols:
             fig2.add_scatter(
                 x=all_data['Date'],
-                y=all_data[f'Volume_{symbol}'],
+                y=all_data.get(f'Volume_{symbol}', []),
                 mode='lines',
                 stackgroup='one',
                 name=symbol
@@ -116,7 +121,7 @@ if menu == "📈 Stocks":
 
         # Avg Close Bar Chart
         st.subheader("📉 Average Closing Price")
-        avg_prices = {symbol: all_data[f'Close_{symbol}'].mean() for symbol in symbols}
+        avg_prices = {symbol: all_data[f'Close_{symbol}'].mean() for symbol in symbols if f'Close_{symbol}' in all_data}
         avg_df = pd.DataFrame(list(avg_prices.items()), columns=["Stock", "Avg Close Price"])
         fig3 = px.bar(avg_df, x="Stock", y="Avg Close Price", color="Stock")
         st.plotly_chart(fig3, use_container_width=True)
@@ -136,7 +141,17 @@ elif menu == "📊 Mutual Funds":
         "AUM (₹ Cr)": ["46,832", "54,219", "38,920", "35,112"]
     }
     st.table(pd.DataFrame(mf_data))
-    st.info("Live NAV not connected. Use APIs for real-time mutual fund integration.")
+
+    st.markdown("---")
+    st.subheader("🛒 Buy / Sell Mutual Fund Simulator")
+    buy_mf = st.selectbox("Buy Mutual Fund", mf_data["Fund Name"])
+    buy_units = st.number_input("Units", min_value=1, step=1)
+    if st.button("Buy"):
+        st.success(f"✅ Bought {buy_units} units of {buy_mf} (simulated)")
+    sell_mf = st.selectbox("Sell Mutual Fund", mf_data["Fund Name"])
+    sell_units = st.number_input("Sell Units", min_value=1, step=1, key="sell")
+    if st.button("Sell"):
+        st.success(f"✅ Sold {sell_units} units of {sell_mf} (simulated)")
 
 # --- Watchlist Section ---
 elif menu == "⭐ Watchlist":
@@ -166,3 +181,12 @@ elif menu == "⚙️ Settings":
         "Price": [145, 21.5, 745]
     }
     st.dataframe(pd.DataFrame(tx_data))
+
+# --- Support Section ---
+elif menu == "📞 Support":
+    st.subheader("📞 Customer Support")
+    st.info("""
+📧 Email: support@srrstocks.in  
+📱 Phone: +91-9741869923 
+🕒 Timings: Mon–Sat, 10 AM – 6 PM
+""")
